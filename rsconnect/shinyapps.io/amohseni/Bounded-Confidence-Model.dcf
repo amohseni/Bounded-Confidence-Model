@@ -5,8 +5,8 @@ account: amohseni
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 2361714
-bundleId: 3193389
+bundleId: 3193493
 url: https://amohseni.shinyapps.io/Bounded-Confidence-Model/
-when: 1590542037.83522
+when: 1590545374.07965
 asMultiple: FALSE
 asStatic: FALSE

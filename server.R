@@ -104,12 +104,13 @@ shinyServer(function(input, output, session) {
       theme(
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
-        plot.title = element_text(
-          size = 20,
-          hjust = 0.5,
-          margin = margin(b = 20, unit = "pt"),
-          lineheight = 1.15
-        ),
+        plot.title = element_blank(), 
+        #   element_text(
+        #   size = 20,
+        #   hjust = 0.5,
+        #   margin = margin(b = 20, unit = "pt"),
+        #   lineheight = 1.15
+        # ),
         legend.position = "none",
         axis.title.x =  element_text(size = 16, margin = margin(t = 15, unit = "pt")),
         axis.title.y =  element_text(size = 16, margin = margin(r = 15, unit = "pt"))
