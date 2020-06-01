@@ -28,9 +28,9 @@ shinyUI(fluidPage(
                tags$b("Description."),
                "When does opinion formation within an interacting group lead to consensus, polarization, or fragmentation? The Hegselmann-Krausse bounded confidence model of opinion dynamics (2002) offers one attempt to explore this question."
              ),
-             p("The dynamics is intuitive. Individuals begin with the opinions of \\(N\\) uniformly distributed across the unit interval \\((0,1)\\). At each time step \\(t\\), each individual \\(i\\) produces her opinion for the next time step \\(x_i(t+1)\\) by taking the average of the opinions of individuals (including herself) whose opinions differ from her own by no more than a certain confidence level \\(\\epsilon_i\\). That is, the dynamics are given by"),
+             p("The dynamics are simple. A population of \\(N\\) individuals begin with their opinions uniformly distributed over the unit interval \\((0,1)\\). At each time step \\(t\\), each individual \\(i\\) produces her opinion for the next time step \\(x_i(t+1)\\) by taking the average of the opinions of individuals (including herself) whose opinions differ from her own by no more than a certain confidence level \\(\\epsilon_i\\). That is, the dynamics are given by"),
              p("\\( \\displaystyle x_i(t+1)=|I(i,x(t))|^{-1} \\sum_{j \\in I(i,x(t))} x_j(t)\\),", align = "center"),
-             p("where \\(I(i,x) = \\{1 \\leq j \\leq n: |x_i - x_j| \\leq \\epsilon_i \\} \\).")
+             p("where \\(I(i,x) = \\{1 \\leq j \\leq N: |x_i - x_j| \\leq \\epsilon_i \\} \\).")
            ),
            column(
              width = 6,
@@ -84,7 +84,7 @@ shinyUI(fluidPage(
       # Number of rounds of the simulation
       sliderInput(
         "numberOfRounds",
-        "Number of interations of dyamics (\\(T\\)):",
+        "Number of iterations of dyamics (\\(T\\)):",
         min = 1,
         max = 15,
         value = 10

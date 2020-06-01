@@ -29,48 +29,68 @@ shinyServer(function(input, output, session) {
     OpinionsMatrix <-
       data.frame(matrix(
         data = NA,
-        nrow = R,
-        ncol = N + 1
+        nrow = R + 1,
+        ncol = N
       ))
     # Set the initial opinions of all agents uniformly from 0 to 1
-    InitialOpinionsVector <- seq(from = 0, to = 1, by = N ^ -1)
+    if (N != 1) {
+      InitialOpinionsVector <- seq(from = 0, to = 1, by = (N - 1) ^ -1)
+    } else {
+      InitialOpinionsVector <- 0.5
+    }
     OpinionsMatrix[1, ] <- InitialOpinionsVector
     
-    # Run the Hegselmann & Krause opinion dynanmics
-    for (round in 1:(R - 1)) { # For each round,
-      for (agent in 1:(N + 1)) { # For each agent,
-        # Get the current opinion of the agent
-        Currentopinion <- OpinionsMatrix[round, agent]
-        # Determine which peers are above the agent
-        PeersAbove <- which(OpinionsMatrix[round, ] > Currentopinion & OpinionsMatrix[round, ] <= Currentopinion + ConfidenceIntervalAbove)
-        # Determine which peers below the agent are close enough such that the agent will listen to them
-        PeersBelow <- which(OpinionsMatrix[round, ] < Currentopinion & OpinionsMatrix[round, ] >= Currentopinion - ConfidenceIntervalBelow)
-        # Compute the agent's new opinion as the average of her neighbors' opinions, including her own
-        NewOpinion <-
-          mean(c(Currentopinion,
-                 as.vector(unlist(
-                   OpinionsMatrix[round, PeersAbove]
-                 )),
-                 as.vector(unlist(
-                   OpinionsMatrix[round, PeersBelow]
-                 ))))
-        # Update the agent's opinion
-        OpinionsMatrix[round + 1, agent] <- NewOpinion
+    # Initialize progress loader
+    withProgress(message = 'Computing:', value = 0, {
+      # Run the Hegselmann & Krause opinion dynanmics
+      for (round in 1:R) {
+        # For each round,
+        for (agent in 1:N) {
+          # For each agent,
+          # Get the current opinion of the agent
+          Currentopinion <- OpinionsMatrix[round, agent]
+          # Determine which peers are above the agent
+          PeersAbove <-
+            which(
+              OpinionsMatrix[round, ] > Currentopinion &
+                OpinionsMatrix[round, ] <= Currentopinion + ConfidenceIntervalAbove
+            )
+          # Determine which peers below the agent are close enough such that the agent will listen to them
+          PeersBelow <-
+            which(
+              OpinionsMatrix[round, ] < Currentopinion &
+                OpinionsMatrix[round, ] >= Currentopinion - ConfidenceIntervalBelow
+            )
+          # Compute the agent's new opinion as the average of her neighbors' opinions, including her own
+          NewOpinion <-
+            mean(c(Currentopinion,
+                   as.vector(unlist(
+                     OpinionsMatrix[round, PeersAbove]
+                   )),
+                   as.vector(unlist(
+                     OpinionsMatrix[round, PeersBelow]
+                   ))))
+          # Update the agent's opinion
+          OpinionsMatrix[round + 1, agent] <- NewOpinion
+         
+          # Increment the progress bar, and update the detail text.
+          incProgress(1 / (R * N), detail = paste("Step ", ((round - 1) * N + agent), " of ", (N * R), ".", sep = "")) 
+        }
       }
-    }
+    })
     
     # Create the plot
     DataForPlot <-
       data.frame(matrix(
         data = NA,
         ncol = 3,
-        nrow = ((N + 1) * R)
+        nrow = (N * (R + 1))
       ))
     colnames(DataForPlot) <- c("Round", "Opinion", "Agent")
-    DataForPlot$Round <- rep(1:R, each = (N + 1))
-    DataForPlot$Agent <- as.character(rep(1:(N + 1), times = R))
+    DataForPlot$Round <- rep(0:R, each = N)
+    DataForPlot$Agent <- as.character(rep(1:N, times = R + 1))
     DataForPlot$Opinion <- as.vector(unlist(t(OpinionsMatrix)))
-    DataForPlot$Agent <- factor(DataForPlot$Agent, levels = as.character(1:(N + 1)))
+    DataForPlot$Agent <- factor(DataForPlot$Agent, levels = as.character(1:N))
   
     # OUTPUT the results of our computations to be accessed by other reactive contexts
     return(list(DataForPlot))
@@ -82,7 +102,7 @@ shinyServer(function(input, output, session) {
     
     # Set parameters
     R <- input$numberOfRounds # Number of rounds of the simulation
-    N <- input$numberOfAgents # Number of agents
+    N <- input$numberOfAgents - 1 # Number of agents
     
     # Import relevant variables
     DataForPlot <- computeDynamics()[[1]]
@@ -97,9 +117,9 @@ shinyServer(function(input, output, session) {
            )) +
       geom_line(size = 0.5) +
       scale_color_manual(values = rainbow(N + 1)) +
-      scale_x_continuous(breaks = seq(from = 1, to = R, by = 1)) +
+      scale_x_continuous(breaks = seq(from = 0, to = R, by = 1)) +
       ggtitle("Opinion Dynamics") +
-      labs(x = "Iterations", y = "Opinions") +
+      labs(x =  expression(paste("Iteration ", italic("t"))), y = "Opinions") +
       theme_minimal() +
       theme(
         panel.grid.major = element_blank(), 
